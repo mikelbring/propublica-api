@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 )
 
-type Results struct {
+type BillsResults struct {
 	Status string
 	Results []struct {
 		Chamber string
 		Congress string
 		Num_results string
+		Offset string
 		Bills []Bill
 	}
 }
@@ -23,25 +24,16 @@ type Bill struct {
 	Committees string
 	Latest_major_action string
 	Latest_major_action_date string
+	Sponsor_uri string
+	Cosponsors string
 }
 
-type Client struct {
-	token string
-}
-
-func New(token string) *Client {
-	s := &Client{}
-	s.token = token
-
-	return s
-}
-
-func (api *Client) GetLatestBills(congress string, chamber string, status string) (*Results, error) {
+func (api *Client) GetLatestBills(congress string, chamber string, status string) (*BillsResults, error) {
 	resp, _ := resty.R().
 		SetHeader("X-API-Key", api.token).
 		Get("https://api.propublica.org/congress/v1/" + congress + "/" + chamber + "/bills/" + status + ".json")
 
-	data := &Results{}
+	data := &BillsResults{}
 
 	if err := json.Unmarshal([]byte(resp.String()), &data); err != nil {
         return nil, err
